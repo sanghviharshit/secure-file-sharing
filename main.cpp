@@ -21,8 +21,12 @@
 #include <iostream>
 #include <functional>
 #include <string>
-#include "aes256.h"
 #include <fstream>
+#include <sstream>
+#include <stdlib.h>
+#include <string.h>
+#include "aes256.h"
+#include "sha256.h"
 
 using namespace std;
 
@@ -105,6 +109,7 @@ void preprocess (char *KeyFileName, char *FileNameOriginal) {
 
 	hash <string> strHash;
 	unsigned char fileKey[32];
+	const char *fileKeyString;
 	string keyPart;
 	char *buf;
     unsigned char *newbuf, *inputptr;
@@ -112,6 +117,7 @@ void preprocess (char *KeyFileName, char *FileNameOriginal) {
     ofstream outfile;
     int padding = 0;
 
+    /*
 	keyForEncrypt.integer = strHash(KeyFileName);
 	keyPart = to_string(keyForEncrypt.integer);
 
@@ -132,15 +138,101 @@ void preprocess (char *KeyFileName, char *FileNameOriginal) {
 		fileKey[i+24] = keyForEncrypt.byte[i];
 	}
 
+    */
 	/*
 	unsigned int numBytes = 8;
 	unsigned char bytes[numBytes];
 	for (int i=0;i<numBytes; i++) {
 		bytes[i] = (keyForEncrypt.integer >> i) & 0xFF;
 	}
-	*/
+
 	cout << "Key For Encryption: " << keyForEncrypt.integer << endl;
 	cout << "Key Part: " << keyPart << endl;
+	*/
+
+    SHA256 sha256;
+    fileKeyString = sha256(KeyFileName).c_str();
+
+    cout << strlen(fileKeyString) << endl;
+
+    cout << *fileKeyString << *(fileKeyString +1)<< endl;
+
+    string newstring = sha256(KeyFileName);
+    cout << "newstring: " << newstring << endl;
+    string oneHex = newstring.substr(0,2);
+    cout << "oneHex: " << oneHex << endl;
+    unsigned char hexV;
+	stringstream ss1;
+	//string byte = *fileKeyString + *(fileKeyString+1);
+
+	ss1 << std::dec << oneHex;
+	ss1 >> hexV;
+
+	printf("Test =======>hexV: %02x\n", hexV);
+
+    //string chr = to_string((char)*fileKeyString);
+    //cout << chr << endl;
+    //cout << "str to int: " << stoi(chr) << endl;
+
+    const char *keyptr = fileKeyString;
+    char hex[2];
+
+    printf("size of filekey[i]: %d\n", sizeof(fileKey[0]));
+    printf("size of *fileKeyString: %d\n", sizeof(*fileKeyString));
+
+    /*
+    char str[2];
+    strcpy (str,(const char*) *fileKeyString);
+    strcat (str,(const char*) *(fileKeyString+1));
+
+    cout << str << endl;
+    unsigned char x;
+	stringstream ss;
+	//string byte = *fileKeyString + *(fileKeyString+1);
+
+	ss << std::hex << str;
+	ss >> x;
+	printf("Test =======> %02x", x);
+
+
+
+
+	for (int i = 0; i < 32;i++) {
+		fileKey[i] = 0;
+
+		//itoa(10,hex,16);
+		//printf(";%02x ", hex);
+		fileKey[i] = *fileKeyString;
+		printf("%c ", fileKey[i]);
+		fileKey[i] = fileKey[i] >> 4;
+		printf("%02x ", fileKey[i]);
+		fileKey[i] = fileKey[i] || *(fileKeyString+1);
+		printf("%02x; ", fileKey[i]);
+		fileKeyString = fileKeyString + 2;
+	}
+
+	cout << endl;
+
+     */
+
+    for (i=0; i<32; i++) {
+    	fileKey[i] = *fileKeyString;
+    	fileKeyString = fileKeyString+2;
+    }
+
+
+	fileKeyString = keyptr;
+
+
+    //cout << "int to str: " << to_string(stoi(fileKeyString)) << endl;
+    cout << "hash: " << fileKeyString << endl;
+/*
+    for (i=0; i<32; i++) {
+    	fileKey[i] = fileKeyString[i];
+    	fileKeyString = fileKeyString+2;
+    }
+
+*/
 
 	buf = ReadFile(FileNameOriginal);
 
@@ -157,19 +249,27 @@ void preprocess (char *KeyFileName, char *FileNameOriginal) {
 
 
 	inputptr = newbuf;
-	cout << inputptr << ">>>>>>" << endl;
+	cout << ">>>>>>" << inputptr << ">>>>>>" << endl;
 	aes256_init(&ctx, fileKey);
 
 	for(i=0; i< totalLen + padding;) {
 		aes256_encrypt_ecb(&ctx, newbuf);
 		i = i + 16;
 		newbuf = newbuf + 16;
+
 	}
-	cout << inputptr << ">>>>>>" << endl;
+	cout << ">>>>>>" << inputptr << ">>>>>>" << endl;
 
 	DUMP("enc: ", i, inputptr, totalLen + padding);
 	DUMP("key: ", i, fileKey, sizeof(fileKey));
 	newbuf = inputptr;
+
+/*
+	for (size_t i = 0; i < totalLen + padding; ++i)
+	{
+		cout << bitset<8>(newbuf[i]);
+	}
+*/
 
 	outfile.open(FileNameShared, ofstream::binary);
 	outfile.write ((char *)newbuf,totalLen+ padding);
@@ -184,6 +284,9 @@ void preprocess (char *KeyFileName, char *FileNameOriginal) {
 		newbuf = newbuf + 16;
 		i = i + 16;
 	}
+
+	newbuf = inputptr;
+	cout << ">>>>>>" << inputptr << ">>>>>>" << endl;
 
 	DUMP("dec: ", i, inputptr, totalLen + padding);
 
@@ -203,24 +306,47 @@ void recover2(char *FileNameFromCloud, char *FileNameShared, char *SharedFileKey
 
 	hash <string> strHash;
 	unsigned char fileKey[32];
+	const char *fileKeyString;
 	string keyPart;
 	char *buf;
     unsigned char *newbuf, *inputptr;
     aes256_context ctx;
     ofstream outfile;
 
+    SHA256 sha256;
+
+    fileKeyString = sha256(KeyFileName).c_str();
+
+
+    for (i=0; i<32; i++) {
+    	fileKey[i] = *fileKeyString;
+    	fileKeyString = fileKeyString+2;
+    }
+
+    /*
 	keyForEncrypt.integer = strHash(KeyFileName);
 	keyPart = to_string(keyForEncrypt.integer);
 
+	cout << "Size of Key (int): " << sizeof(keyForEncrypt.integer) << endl;
+	cout << "Size of Key (byte): " << sizeof(keyForEncrypt.byte) << endl;
+	cout << "Size of fileKey: " << sizeof(fileKey) << endl;
+	cout << "Size of Key Part: " << sizeof(keyPart) << endl;
+	cout << "Size of an element in Key Part array: " << sizeof(keyPart[0]) << endl;
+
+	cout << "Key Part Bytes:\n";
 	for (int i = 0; i < 24;i++) {
 		//printf("%02x ", keyPart[i]);
 		fileKey[i] = keyPart[i];
+
 	}
 
 	for (int i=0; i<8; i++) {
 		fileKey[i+24] = keyForEncrypt.byte[i];
 	}
+
 	cout << "Key For Encryption: " << keyForEncrypt.integer << endl;
+
+    */
 
 	buf = ReadFile(FileNameShared);
 	newbuf = (unsigned char *) malloc(totalLen);
@@ -235,7 +361,8 @@ void recover2(char *FileNameFromCloud, char *FileNameShared, char *SharedFileKey
 	DUMP("key: ", i, fileKey, sizeof(fileKey));
 
 	inputptr = newbuf;
-	cout << inputptr << endl << endl;
+
+	cout << ">>>>>>" << inputptr << ">>>>>>" << endl;
 
 	aes256_init(&ctx, fileKey);
 
@@ -244,7 +371,10 @@ void recover2(char *FileNameFromCloud, char *FileNameShared, char *SharedFileKey
 		newbuf = newbuf + 16;
 		i = i + 16;
 	}
-	cout << inputptr << endl << endl;
+
+	newbuf = inputptr;
+
+	cout << ">>>>>>" << inputptr << ">>>>>>" << endl;
 
 	DUMP("dec: ", i, inputptr, totalLen);
 
