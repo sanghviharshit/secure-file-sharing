@@ -1,19 +1,22 @@
 CC=g++
-TARGETS=main PreProcess Authorize Recover
+BIN := bin
+TARGETS=$(BIN)/main $(BIN)/PreProcess $(BIN)/Authorize $(BIN)/Recover
+SRCDIR := src
+EXTDIR := ext
 
 all: $(TARGETS)
 
-main: main.cpp aes256.c aes256.h sha256.cpp sha256.h
-	$(CC) -o main main.cpp aes256.c sha256.cpp
+$(BIN)/main:
+	$(CC) -I include -o $(BIN)/main $(SRCDIR)/main.cpp $(EXTDIR)/aes256.cpp $(EXTDIR)/sha256.cpp
 
-PreProcess: PreProcess.cpp aes256.c aes256.h sha256.cpp sha256.h
-	$(CC) -o PreProcess PreProcess.cpp aes256.c sha256.cpp
+$(BIN)/PreProcess:
+	$(CC) -I include -o $(BIN)/PreProcess $(SRCDIR)/PreProcess.cpp $(EXTDIR)/aes256.cpp $(EXTDIR)/sha256.cpp
 
-Authorize: Authorize.cpp aes256.c aes256.h sha256.cpp sha256.h
-	$(CC) -o Authorize Authorize.cpp aes256.c sha256.cpp
+$(BIN)/Authorize:
+	$(CC) -I include -o $(BIN)/Authorize $(SRCDIR)/Authorize.cpp $(EXTDIR)/aes256.cpp $(EXTDIR)/sha256.cpp
 
-Recover: Recover.cpp aes256.c aes256.h sha256.cpp sha256.h
-	$(CC) -o Recover Recover.cpp aes256.c sha256.cpp
+$(BIN)/Recover:
+	$(CC) -I include -o $(BIN)/Recover $(SRCDIR)/Recover.cpp $(EXTDIR)/aes256.cpp $(EXTDIR)/sha256.cpp
 
 clean:
 	-rm $(TARGETS)
