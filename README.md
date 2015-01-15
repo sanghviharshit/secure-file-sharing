@@ -61,9 +61,12 @@ Your submission should be a zip file containing at least the following files:
 
 Please name your zip file as <last-name>-cs6903f14project2 and your contained files as <last-name>-presentation, <last-name>-preprocess, <last-name>-authorize, and <last-name>-recover. Please include all files that allow us to run or compile them. In case of a team, include both team members' last names.
 
-# Grading
+# Grading Criteria
 Your submission will be judged based on the following project grading criteria:
 * technical correctness (i.e., if your software, after inspection of the presentation demonstration and perhaps some amount of testing, seems to satisfy correctness)
 * software usability (i.e., if you followed all of the above instructions, especially on how to run the programs, and if software is easy to use)
 * valid choice of primitive/scheme speeds (i.e., if your implemented primitive/scheme are good choices in terms of security and efficiency)
 * demonstration/presentation quality (i.e., if the demonstration and the entire presentation are well written).
+
+# Documentation and Project Report
+Project report is available in `doc/`.
