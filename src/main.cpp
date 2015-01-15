@@ -16,15 +16,12 @@
 *   ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 *   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
-#include <stdlib.h>
-#include <stdio.h>
 #include <iostream>
 #include <functional>
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <stdlib.h>
-#include <string.h>
+#include <string>
 #include "aes256.h"
 #include "sha256.h"
 
